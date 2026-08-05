@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مدیریت کلاس اسکیت</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.7/index.js"></script>
+  <style>
+    :root {
+      --primary: #0ea5e9; --primary-dark: #0284c7; --success: #10b981;
+      --warning: #f59e0b; --danger: #ef4444; --bg: #f0f9ff; --card: #ffffff;
+      --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
+      --shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Vazirmatn, Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    .header {
+      background: linear-gradient(135deg, #0ea5e9, #0369a1); color: white;
+      padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.5rem; box-shadow: 0 4px 15px rgba(3, 105, 161, 0.3);
+    }
+    .header h1 { font-size: 1.3rem; font-weight: 700; }
+    .header-user { font-size: 0.9rem; opacity: 0.95; }
+    .tabs {
+      display: flex; background: white; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50; overflow-x: auto;
+    }
+    .tab {
+      flex: 1; min-width: 100px; padding: 0.85rem 0.4rem; text-align: center;
+      cursor: pointer; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent;
+      background: none; border: none; font-size: 0.9rem;
+    }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); background: #f0f9ff; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.1rem; }
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .card {
+      background: var(--card); border-radius: 14px; padding: 1.2rem;
+      margin-bottom: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border);
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 0.9rem; color: var(--primary-dark); }
+    .days-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+    .day-btn {
+      padding: 0.8rem 0.4rem; border-radius: 10px; border: 2px solid var(--border);
+      background: white; cursor: pointer; font-weight: 600; font-size: 0.9rem; text-align: center;
+    }
+    .day-btn:hover { border-color: var(--primary); background: #f0f9ff; }
+    .day-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .session-list { display: flex; flex-direction: column; gap: 0.7rem; }
+    .session-item { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem; }
+    .session-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .session-time { font-weight: 700; font-size: 1rem; color: var(--primary-dark); }
+    .session-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; margin-bottom: 0.6rem; }
+    .badge {
+      background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.5rem; border-radius: 16px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge.green { background: #d1fae5; color: #065f46; }
+    .badge.orange { background: #fef3c7; color: #92400e; }
+    .badge.red { background: #fee2e2; color: #991b1b; }
+    .badge.purple { background: #ede9fe; color: #5b21b6; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+      padding: 0.5rem 0.9rem; border-radius: 9px; border: none; font-weight: 600;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-outline { background: white; border: 1.5px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.78rem; }
+    .btn-xs { padding: 0.18rem 0.45rem; font-size: 0.72rem; border-radius: 7px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.8rem; margin-bottom: 0.9rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    input, select, textarea {
+      padding: 0.55rem 0.7rem; border: 1.5px solid var(--border); border-radius: 9px;
+      font-size: 0.9rem; background: white;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .students-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .student-item {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 0.9rem; cursor: pointer;
+    }
+    .student-item:hover { border-color: var(--primary); background: #f0f9ff; }
+    .student-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+    .student-name { font-weight: 700; font-size: 1rem; }
+    .student-info { font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: center; }
+    .student-notes {
+      margin-top: 0.7rem; padding: 0.7rem; background: white; border-radius: 9px;
+      border: 1px solid var(--border); font-size: 0.85rem; display: none;
+    }
+    .student-item.expanded .student-notes { display: block; }
+    .history-list { margin-top: 0.7rem; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 9px; background: white; }
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border); font-size: 0.8rem; gap: 0.4rem; flex-wrap: wrap;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .status-present { color: #065f46; font-weight: 600; }
+    .status-absent { color: #991b1b; font-weight: 600; }
+    .session-students { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--border); }
+    .session-students h4 { font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--muted); }
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem;
+      border-radius: 16px; font-size: 0.75rem; margin: 0.15rem; font-weight: 500;
+    }
+    .chip.temp { background: #ede9fe; color: #5b21b6; }
+    .chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 0.85rem; line-height: 1; padding: 0 0.1rem; }
+    .alert-box {
+      background: #fef3c7; border: 1px solid #f59e0b; border-radius: 11px;
+      padding: 0.9rem; margin-bottom: 0.7rem; display: flex;
+      justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;
+    }
+    .alert-box.danger { background: #fee2e2; border-color: #ef4444; }
+    .empty-state { text-align: center; padding: 2rem 1rem; color: var(--muted); }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+      display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: 16px; padding: 1.3rem; width: 100%;
+      max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .modal h3 { margin-bottom: 1rem; color: var(--primary-dark); }
+    .modal-actions { display: flex; gap: 0.6rem; margin-top: 1rem; justify-content: flex-end; flex-wrap: wrap; }
+    .stats-bar { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .stat {
+      background: white; border-radius: 11px; padding: 0.7rem 1rem;
+      border: 1px solid var(--border); min-width: 110px; text-align: center;
+    }
+    .stat .num { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+    .stat .label { font-size: 0.75rem; color: var(--muted); }
+    .actions-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.7rem; }
+    .attendance-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem; border-bottom: 1px solid var(--border); gap: 0.4rem; flex-wrap: wrap;
+    }
+    .attendance-row:last-child { border-bottom: none; }
+    .att-btns { display: flex; gap: 0.35rem; }
+    .att-btns button.active-present { background: #10b981; color: white; border-color: #10b981; }
+    .att-btns button.active-absent { background: #ef4444; color: white; border-color: #ef4444; }
+    .phone-actions { display: inline-flex; gap: 0.25rem; align-items: center; }
+
+    /* Login & Admin */
+    #screen-login, #screen-admin, #screen-app { display: none; min-height: 100vh; }
+    #screen-login.show, #screen-admin.show, #screen-app.show { display: block; }
+    .login-box {
+      max-width: 380px; margin: 4rem auto; background: white; border-radius: 18px;
+      padding: 2rem; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center;
+    }
+    .login-box h2 { margin-bottom: 1.2rem; color: var(--primary-dark); }
+    .login-box .form-group { text-align: right; margin-bottom: 0.9rem; }
+    .coach-card {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 1rem; margin-bottom: 0.7rem; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.6rem;
+    }
+    .coach-card .name { font-weight: 700; font-size: 1.05rem; }
+    .login-type-btns { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .login-type-btns button { flex: 1; }
+    .login-type-btns button.active { background: var(--primary); color: white; border-color: var(--primary); }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .days-grid { grid-template-columns: repeat(3, 1fr); }
+      .header h1 { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== صفحه ورود ========== -->
+  <div id="screen-login">
+    <div class="login-box">
+      <h2>🛼 ورود به سامانه اسکیت</h2>
+      <div class="login-type-btns">
+        <button class="btn btn-outline active" id="btn-type-coach" onclick="setLoginType('coach')">ورود مربی</button>
+        <button class="btn btn-outline" id="btn-type-admin" onclick="setLoginType('admin')">ورود مدیر</button>
+      </div>
+      <div id="login-coach-fields">
+        <div class="form-group">
+          <label>شماره موبایل</label>
+          <input type="tel" id="login-coach-phone" placeholder="مثال: 0912xxxxxxx" />
+        </div>
+        <div class="form-group">
+          <label>رمز عبور</label>
+          <input type="password" id="login-coach-pass" placeholder="رمز عبور مربی" />
+        </div>
+      </div>
+      <div id="login-admin-fields" style="display:none;">
+        <div class="form-group">
+          <label>رمز مدیر</label>
+          <input type="password" id="login-admin-pass" placeholder="رمز مدیر" />
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.8rem;" onclick="doLogin()">ورود</button>
+      <p id="login-status-msg" style="margin-top:0.7rem;font-size:0.78rem;color:var(--muted);"></p>
+    </div>
+  </div>
+
+  <!-- ========== پنل مدیر ========== -->
+  <div id="screen-admin">
+    <div class="header">
+      <h1>⚙️ پنل مدیریت</h1>
+      <div>
+        <span class="header-user">مدیر سیستم</span>
+        <button class="btn btn-outline btn-sm" style="margin-right:0.5rem;color:white;border-color:rgba(255,255,255,0.5);" onclick="logout()">خروج</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+          <h2 style="margin:0;">مربی‌ها</h2>
+          <button class="btn btn-primary btn-sm" onclick="openAddCoachModal()">＋ افزودن مربی</button>
+        </div>
+        <div id="coaches-list"></div>
+      </div>
+      <div class="card">
+        <h2>تغییر رمز مدیر</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>رمز جدید</label>
+            <input type="password" id="new-admin-pass" placeholder="رمز جدید" />
+          </div>
+        </div>
+        <button class="btn btn-warning btn-sm" onclick="changeAdminPass()">ذخیره رمز جدید</button>
+      </div>
+      <div class="card">
+        <h2>تنظیمات سرور</h2>
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.6rem;">آدرس فایل api.php که روی هاستت آپلود کردی رو اینجا بذار. مثال: https://yourdomain.com/backend/api.php</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>آدرس سرور</label>
+            <input type="text" id="server-url" placeholder="https://yourdomain.com/backend/api.php" />
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveServerUrl()">ذخیره آدرس سرور</button>
+        <p id="server-status-msg" style="margin-top:0.6rem;font-size:0.8rem;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== برنامه اصلی مربی ========== -->
+  <div id="screen-app">
+    <div class="header">
+      <h1>🛼 مدیریت کلاس اسکیت</h1>
+      <div>
+        <span class="header-user" id="current-coach-name"></span>
+        <button class="btn btn-outline btn-sm" style="margin-right:0.4rem;color:white;border-color:rgba(255,255,255,0.5);" id="btn-back-admin" onclick="backToAdmin()" style="display:none;">بازگشت به مدیریت</button>
+        <button class="btn btn-outline btn-sm" style="color:white;border-color:rgba(255,255,255,0.5);" onclick="logout()">خروج</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="days">روزهای هفته</button>
+      <button class="tab" data-tab="students">شاگردها</button>
+      <button class="tab" data-tab="alerts">هشدارها <span id="alert-count" style="background:#ef4444;color:white;border-radius:50%;padding:0 5px;font-size:0.7rem;margin-right:3px;display:none;">0</span></button>
+    </div>
+
+    <div class="container">
+      <div id="panel-days" class="panel active">
+        <div class="card">
+          <h2>📅 انتخاب روز</h2>
+          <div class="days-grid" id="days-grid"></div>
+        </div>
+        <div class="card" id="sessions-card" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;flex-wrap:wrap;gap:0.4rem;">
+            <h2 style="margin:0;">سانس‌های <span id="selected-day-title"></span></h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddSessionModal()">＋ افزودن سانس</button>
+          </div>
+          <div class="session-list" id="session-list"></div>
+        </div>
+      </div>
+
+      <div id="panel-students" class="panel">
+        <div class="stats-bar" id="students-stats"></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;flex-wrap:wrap;gap:0.4rem;">
+            <h2 style="margin:0;">👥 لیست شاگردها</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddStudentModal()">＋ افزودن شاگرد</button>
+          </div>
+          <div class="students-list" id="students-list"></div>
+        </div>
+      </div>
+
+      <div id="panel-alerts" class="panel">
+        <div class="card">
+          <h2>⚠️ هشدارها و اعلان‌ها</h2>
+          <div id="alerts-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال‌ها -->
+  <div class="modal-overlay" id="modal-coach">
+    <div class="modal">
+      <h3 id="coach-modal-title">افزودن مربی</h3>
+      <div class="form-group" style="margin-bottom:0.8rem;">
+        <label>نام مربی</label>
+        <input type="text" id="coach-name" placeholder="مثال: رضا احمدی" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.8rem;">
+        <label>شماره موبایل (برای ورود مربی)</label>
+        <input type="tel" id="coach-phone" placeholder="مثال: 0912xxxxxxx" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.8rem;">
+        <label>رمز عبور</label>
+        <input type="text" id="coach-pass" placeholder="رمز برای ورود مربی" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.8rem;">
+        <label>درصد کمیسیون مربی</label>
+        <input type="number" id="coach-commission" placeholder="25" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.8rem;" id="coach-active-wrap">
+        <label><input type="checkbox" id="coach-active" checked style="width:auto;margin-left:0.4rem;" />مربی فعال باشد</label>
+      </div>
+      <p id="coach-modal-msg" style="font-size:0.8rem;color:var(--danger);"></p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-coach')">انصراف</button>
+        <button class="btn btn-primary" onclick="saveCoach()">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-session">
+    <div class="modal">
+      <h3 id="session-modal-title">افزودن سانس جدید</h3>
+      <div class="form-grid">
+        <div class="form-group"><label>ساعت شروع</label><input type="time" id="session-start" /></div>
+        <div class="form-group"><label>ساعت پایان</label><input type="time" id="session-end" /></div>
+        <div class="form-group"><label>گنجایش</label><input type="number" id="session-capacity" min="1" value="6" /></div>
+        <div class="form-group"><label>شهریه (تومان)</label><input type="number" id="session-fee" min="0" value="500000" /></div>
+        <div class="form-group"><label>درصد سود</label><input type="number" id="session-profit" min="0" max="100" value="50" /></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-session')">انصراف</button>
+        <button class="btn btn-primary" onclick="saveSession()">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-student">
+    <div class="modal">
+      <h3 id="student-modal-title">افزودن شاگرد</h3>
+      <div class="form-grid">
+        <div class="form-group"><label>نام</label><input type="text" id="student-name" /></div>
+        <div class="form-group"><label>شماره تماس</label><input type="tel" id="student-phone" /></div>
+        <div class="form-group"><label>تاریخ ثبت‌نام (شمسی)</label><input type="text" id="student-regdate" placeholder="1404/05/12" /></div>
+        <div class="form-group"><label>کل جلسات (۱-۱۵)</label><input type="number" id="student-sessions" min="1" max="15" value="10" /></div>
+        <div class="form-group"><label>جلسات باقی‌مانده</label><input type="number" id="student-remaining" min="0" max="15" value="10" /></div>
+      </div>
+      <div class="form-group" style="margin-bottom:0.9rem;">
+        <label>توضیحات</label>
+        <textarea id="student-notes"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-student')">انصراف</button>
+        <button class="btn btn-primary" onclick="saveStudent()">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-add-to-session">
+    <div class="modal">
+      <h3>افزودن شاگرد ثابت</h3>
+      <p style="margin-bottom:0.8rem;color:var(--muted);font-size:0.85rem;" id="add-to-session-info"></p>
+      <div class="form-group"><label>شاگرد</label><select id="select-student-for-session"></select></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-add-to-session')">انصراف</button>
+        <button class="btn btn-success" onclick="confirmAddToSession()">ثبت</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-add-temp">
+    <div class="modal">
+      <h3>افزودن شاگرد موقت</h3>
+      <p style="margin-bottom:0.8rem;color:var(--muted);font-size:0.85rem;" id="add-temp-info"></p>
+      <div class="form-group"><label>شاگرد</label><select id="select-temp-student"></select></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-add-temp')">انصراف</button>
+        <button class="btn btn-success" onclick="confirmAddTemp()">افزودن</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-attendance">
+    <div class="modal">
+      <h3>ثبت حضور و غیاب</h3>
+      <p style="margin-bottom:0.8rem;color:var(--muted);font-size:0.85rem;" id="attendance-info"></p>
+      <div id="attendance-list"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-attendance')">انصراف</button>
+        <button class="btn btn-success" onclick="confirmAttendance()">ثبت جلسه</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-reregister">
+    <div class="modal">
+      <h3>ثبت‌نام مجدد</h3>
+      <p style="margin-bottom:0.8rem;" id="reregister-info"></p>
+      <div class="form-group"><label>تعداد جلسات جدید (۱-۱۵)</label><input type="number" id="reregister-sessions" min="1" max="15" value="10" /></div>
+      <div class="form-group" style="margin-top:0.7rem;"><label>تاریخ جدید (شمسی)</label><input type="text" id="reregister-date" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-reregister')">انصراف</button>
+        <button class="btn btn-success" onclick="confirmReregister()">ثبت‌نام مجدد</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه'];
+    let db = { adminPassword: 'admin123', coaches: [] };
+    let currentUser = null; // { type: 'admin' } or { type: 'coach', coachId }
+    let adminPasswordCache = null; // رمز مدیر که در سشن فعلی برای صدا زدن API نگه می‌داریم
+
+    // ---------- ارتباط با سرور ----------
+    function getServerUrl() { return localStorage.getItem('skateServerUrl') || ''; }
+    function saveServerUrl() {
+      const url = document.getElementById('server-url').value.trim();
+      localStorage.setItem('skateServerUrl', url);
+      document.getElementById('server-status-msg').textContent = 'ذخیره شد ✅';
+      document.getElementById('server-status-msg').style.color = 'var(--success)';
+    }
+    async function callServer(action, payload, timeoutMs) {
+      const base = getServerUrl();
+      if (!base) return { ok: false, error: 'no_server_configured' };
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), timeoutMs || 8000);
+      try {
+        const res = await fetch(base + '?action=' + action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload || {}),
+          signal: controller.signal
+        });
+        clearTimeout(t);
+        return await res.json();
+      } catch (e) {
+        clearTimeout(t);
+        return { ok: false, error: 'offline_or_unreachable' };
+      }
+    }
+    let viewingCoachId = null; // when admin views a coach
+    let selectedDay = null;
+    let editingSessionId = null;
+    let editingStudentId = null;
+    let editingCoachId = null;
+    let currentSessionForAdd = null;
+    let currentSessionForTemp = null;
+    let currentSessionForAttendance = null;
+    let reregisterStudentId = null;
+    let attendanceState = {};
+    let loginType = 'coach';
+
+    // ---------- تاریخ شمسی ----------
+    function todayJalali() {
+      try {
+        if (typeof jalaali !== 'undefined' && jalaali.toJalaali) {
+          const g = new Date();
+          const j = jalaali.toJalaali(g.getFullYear(), g.getMonth()+1, g.getDate());
+          return j.jy + '/' + String(j.jm).padStart(2,'0') + '/' + String(j.jd).padStart(2,'0');
+        }
+      } catch(e) {}
+      return '1404/05/14';
+    }
+    function jalaliToGregorian(jStr) {
+      if (!jStr || !jStr.includes('/')) return null;
+      const p = jStr.trim().split('/').map(Number);
+      if (p.length !== 3 || p.some(isNaN)) return null;
+      try {
+        if (typeof jalaali !== 'undefined' && jalaali.toGregorian) {
+          const g = jalaali.toGregorian(p[0], p[1], p[2]);
+          return new Date(g.gy, g.gm-1, g.gd);
+        }
+      } catch(e) {}
+      return null;
+    }
+    function daysBetweenJalali(jDateStr) {
+      const g = jalaliToGregorian(jDateStr);
+      if (!g) return 0;
+      const now = new Date(); now.setHours(0,0,0,0); g.setHours(0,0,0,0);
+      return Math.floor((now - g) / 86400000);
+    }
+    function isValidJalali(str) {
+      if (!str || !str.includes('/')) return false;
+      const p = str.trim().split('/').map(Number);
+      return p.length===3 && !p.some(isNaN) && p[0]>=1300 && p[0]<=1500 && p[1]>=1 && p[1]<=12 && p[2]>=1 && p[2]<=31;
+    }
+
+    // ---------- ذخیره / بارگذاری ----------
+    function saveDB() { localStorage.setItem('skateClassDB', JSON.stringify(db)); }
+    function loadDB() {
+      const s = localStorage.getItem('skateClassDB');
+      if (s) {
+        try {
+          db = JSON.parse(s);
+          if (!db.adminPassword) db.adminPassword = 'admin123';
+          if (!db.coaches) db.coaches = [];
+          db.coaches.forEach(c => {
+            if (!c.data) c.data = { sessions: {}, students: [] };
+            DAYS.forEach(d => { if (!c.data.sessions[d]) c.data.sessions[d] = []; });
+            (c.data.students||[]).forEach(st => { if (!st.history) st.history = []; });
+            if (c.commission == null) c.commission = 25;
+            if (c.active == null) c.active = 1;
+          });
+        } catch(e) { db = { adminPassword: 'admin123', coaches: [] }; }
+      }
+    }
+
+    // داده فعال (مربی فعلی یا مربی که مدیر داره می‌بینه)
+    function getActiveData() {
+      const cid = currentUser.type === 'coach' ? currentUser.coachId : viewingCoachId;
+      const coach = db.coaches.find(c => c.id === cid);
+      if (!coach) return { sessions: {}, students: [] };
+      if (!coach.data) coach.data = { sessions: {}, students: [] };
+      DAYS.forEach(d => { if (!coach.data.sessions[d]) coach.data.sessions[d] = []; });
+      return coach.data;
+    }
+    function saveActiveData() { saveDB(); }
+
+    // ---------- ورود / خروج ----------
+    function setLoginType(t) {
+      loginType = t;
+      document.getElementById('btn-type-coach').classList.toggle('active', t==='coach');
+      document.getElementById('btn-type-admin').classList.toggle('active', t==='admin');
+      document.getElementById('login-coach-fields').style.display = t==='coach' ? 'block' : 'none';
+      document.getElementById('login-admin-fields').style.display = t==='admin' ? 'block' : 'none';
+    }
+
+    function setLoginMsg(msg, isError) {
+      const el = document.getElementById('login-status-msg');
+      el.textContent = msg || '';
+      el.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+    }
+
+    async function doLogin() {
+      if (loginType === 'admin') {
+        const pass = document.getElementById('login-admin-pass').value;
+        setLoginMsg('در حال بررسی...', false);
+        // اگه سرور تنظیم شده باشه، رمز رو از سرور چک می‌کنیم
+        if (getServerUrl()) {
+          const res = await callServer('admin_login', { password: pass });
+          if (!res.ok) {
+            if (res.error === 'wrong_password') { setLoginMsg('رمز مدیر اشتباه است', true); return; }
+            // سرور در دسترس نیست: با رمز محلی کش‌شده وارد شو (حالت آفلاین)
+            if (pass !== db.adminPassword) { setLoginMsg('رمز اشتباه است یا به سرور دسترسی نیست', true); return; }
+          }
+        } else if (pass !== db.adminPassword) {
+          setLoginMsg('رمز مدیر اشتباه است', true); return;
+        }
+        adminPasswordCache = pass;
+        db.adminPassword = pass;
+        saveDB();
+        currentUser = { type: 'admin' };
+        viewingCoachId = null;
+        setLoginMsg('');
+        showScreen('admin');
+        renderCoachesList();
+        syncCoachesFromServer(); // در پس‌زمینه لیست رو از سرور به‌روز کن
+      } else {
+        const phone = document.getElementById('login-coach-phone').value.trim();
+        const pass = document.getElementById('login-coach-pass').value;
+        if (!phone || !pass) { setLoginMsg('شماره و رمز را وارد کنید', true); return; }
+        setLoginMsg('در حال بررسی...', false);
+        let coach = db.coaches.find(c => c.phone === phone);
+
+        if (getServerUrl()) {
+          const res = await callServer('coach_check', { phone, coach_password: pass });
+          if (res.ok) {
+            // سرور تایید کرد؛ اطلاعات محلی رو با سرور آپدیت/بساز
+            if (!coach) {
+              const sessions = {}; DAYS.forEach(d => sessions[d] = []);
+              coach = { id: 'c_' + res.coach.id, serverId: res.coach.id, data: { sessions, students: [] } };
+              db.coaches.push(coach);
+            }
+            coach.name = res.coach.name;
+            coach.phone = res.coach.phone;
+            coach.commission = res.coach.commission;
+            coach.active = res.coach.active;
+            coach.password = pass; // برای ورود آفلاین بعدی کش می‌کنیم
+            saveDB();
+          } else if (res.error === 'invalid_credentials') {
+            setLoginMsg('شماره یا رمز اشتباه است', true); return;
+          } else {
+            // سرور در دسترس نیست -> اجازه ورود آفلاین با آخرین اطلاعات کش‌شده
+            if (!coach || coach.password !== pass) { setLoginMsg('اطلاعات نادرست است یا هنوز آنلاین وارد نشده‌اید', true); return; }
+          }
+        } else {
+          if (!coach || coach.password !== pass) { setLoginMsg('شماره یا رمز اشتباه است', true); return; }
+        }
+
+        if (coach.active === 0 || coach.active === false) {
+          setLoginMsg('حساب شما توسط مدیریت غیرفعال شده است', true); return;
+        }
+
+        currentUser = { type: 'coach', coachId: coach.id };
+        viewingCoachId = null;
+        setLoginMsg('');
+        enterCoachApp(coach.id);
+      }
+    }
+
+    // لیست مربی‌ها رو از سرور می‌گیره و با دیتای محلی merge می‌کنه (بدون پاک کردن داده کلاس‌ها)
+    async function syncCoachesFromServer() {
+      if (!getServerUrl() || !adminPasswordCache) return;
+      const res = await callServer('list_coaches', { password: adminPasswordCache });
+      if (!res.ok) return;
+      res.coaches.forEach(sc => {
+        let local = db.coaches.find(c => c.serverId === sc.id);
+        if (!local) {
+          const sessions = {}; DAYS.forEach(d => sessions[d] = []);
+          local = { id: 'c_' + sc.id, serverId: sc.id, data: { sessions, students: [] } };
+          db.coaches.push(local);
+        }
+        local.name = sc.name; local.phone = sc.phone;
+        local.commission = sc.commission; local.active = sc.active;
+      });
+      saveDB();
+      renderCoachesList();
+    }
+
+    function logout() {
+      currentUser = null;
+      viewingCoachId = null;
+      selectedDay = null;
+      adminPasswordCache = null;
+      document.getElementById('login-coach-pass').value = '';
+      document.getElementById('login-admin-pass').value = '';
+      document.getElementById('login-coach-phone').value = '';
+      setLoginMsg('');
+      showScreen('login');
+    }
+
+    function showScreen(name) {
+      document.getElementById('screen-login').classList.remove('show');
+      document.getElementById('screen-admin').classList.remove('show');
+      document.getElementById('screen-app').classList.remove('show');
+      document.getElementById('screen-' + name).classList.add('show');
+    }
+
+    function enterCoachApp(coachId) {
+      viewingCoachId = coachId;
+      const coach = db.coaches.find(c => c.id === coachId);
+      document.getElementById('current-coach-name').textContent = coach ? coach.name : '';
+      document.getElementById('btn-back-admin').style.display = currentUser.type === 'admin' ? 'inline-flex' : 'none';
+      selectedDay = null;
+      document.getElementById('sessions-card').style.display = 'none';
+      showScreen('app');
+      // reset tabs
+      document.querySelectorAll('#screen-app .tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#screen-app .panel').forEach(p => p.classList.remove('active'));
+      document.querySelector('#screen-app .tab[data-tab="days"]').classList.add('active');
+      document.getElementById('panel-days').classList.add('active');
+      renderDays();
+      updateAlertCount();
+    }
+
+    function backToAdmin() {
+      viewingCoachId = null;
+      showScreen('admin');
+      renderCoachesList();
+    }
+
+    // ---------- پنل مدیر ----------
+    function renderCoachesList() {
+      const list = document.getElementById('coaches-list');
+      if (db.coaches.length === 0) {
+        list.innerHTML = '<div class="empty-state">هنوز مربی‌ای اضافه نشده.<br>روی «افزودن مربی» کلیک کنید.</div>';
+        return;
+      }
+      list.innerHTML = db.coaches.map(c => {
+        const stCount = (c.data && c.data.students) ? c.data.students.length : 0;
+        const activeLabel = (c.active === 0 || c.active === false) ? '<span style="color:var(--danger);">غیرفعال</span>' : '<span style="color:var(--success);">فعال</span>';
+        return '<div class="coach-card">' +
+          '<div><div class="name">' + c.name + '</div>' +
+          '<div style="font-size:0.8rem;color:var(--muted);">موبایل: ' + (c.phone||'—') + ' | کمیسیون: ' + (c.commission!=null?c.commission:25) + '% | شاگردان: ' + stCount + ' | ' + activeLabel + '</div></div>' +
+          '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;">' +
+          '<button class="btn btn-success btn-sm" onclick="enterCoachApp(\'' + c.id + '\')">ورود به پروفایل</button>' +
+          '<button class="btn btn-outline btn-sm" onclick="editCoach(\'' + c.id + '\')">ویرایش</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteCoach(\'' + c.id + '\')">حذف</button></div></div>';
+      }).join('');
+    }
+
+    function openAddCoachModal() {
+      editingCoachId = null;
+      document.getElementById('coach-modal-title').textContent = 'افزودن مربی';
+      document.getElementById('coach-name').value = '';
+      document.getElementById('coach-phone').value = '';
+      document.getElementById('coach-pass').value = '';
+      document.getElementById('coach-commission').value = 25;
+      document.getElementById('coach-active').checked = true;
+      document.getElementById('coach-active-wrap').style.display = 'none'; // فقط برای مربی جدید نیازی نیست
+      document.getElementById('coach-modal-msg').textContent = '';
+      openModal('modal-coach');
+    }
+    function editCoach(id) {
+      const c = db.coaches.find(x => x.id === id);
+      if (!c) return;
+      editingCoachId = id;
+      document.getElementById('coach-modal-title').textContent = 'ویرایش مربی';
+      document.getElementById('coach-name').value = c.name;
+      document.getElementById('coach-phone').value = c.phone || '';
+      document.getElementById('coach-pass').value = '';
+      document.getElementById('coach-pass').placeholder = 'برای تغییر رمز پر کنید، وگرنه خالی بگذارید';
+      document.getElementById('coach-commission').value = c.commission != null ? c.commission : 25;
+      document.getElementById('coach-active').checked = !(c.active === 0 || c.active === false);
+      document.getElementById('coach-active-wrap').style.display = 'block';
+      document.getElementById('coach-modal-msg').textContent = '';
+      openModal('modal-coach');
+    }
+    async function saveCoach() {
+      const name = document.getElementById('coach-name').value.trim();
+      const phone = document.getElementById('coach-phone').value.trim();
+      const pass = document.getElementById('coach-pass').value.trim();
+      const commission = parseInt(document.getElementById('coach-commission').value) || 25;
+      const active = document.getElementById('coach-active').checked ? 1 : 0;
+      const msgEl = document.getElementById('coach-modal-msg');
+      if (!name) { msgEl.textContent = 'نام مربی را وارد کنید'; return; }
+      if (!phone) { msgEl.textContent = 'شماره موبایل را وارد کنید'; return; }
+      if (!editingCoachId && !pass) { msgEl.textContent = 'رمز عبور را وارد کنید'; return; }
+      if (!getServerUrl()) { msgEl.textContent = 'اول آدرس سرور را در «تنظیمات سرور» ذخیره کنید'; return; }
+      msgEl.textContent = 'در حال ذخیره...';
+
+      if (editingCoachId) {
+        const c = db.coaches.find(x => x.id === editingCoachId);
+        if (!c) return;
+        const payload = { password: adminPasswordCache, id: c.serverId, name, commission, active };
+        if (pass) payload.coach_password = pass;
+        const res = await callServer('update_coach', payload);
+        if (!res.ok) { msgEl.textContent = 'خطا در ذخیره روی سرور (اتصال اینترنت را چک کنید)'; return; }
+        c.name = name; c.phone = phone; c.commission = commission; c.active = active;
+        if (pass) c.password = pass;
+      } else {
+        const res = await callServer('add_coach', { password: adminPasswordCache, name, phone, coach_password: pass, commission });
+        if (!res.ok) { msgEl.textContent = res.error === 'phone_exists_or_db_error' ? 'این شماره قبلاً ثبت شده' : 'خطا در ذخیره روی سرور'; return; }
+        const sessions = {}; DAYS.forEach(d => sessions[d] = []);
+        db.coaches.push({
+          id: 'c_' + res.id, serverId: res.id,
+          name, phone, password: pass, commission, active: 1,
+          data: { sessions, students: [] }
+        });
+      }
+      saveDB();
+      closeModal('modal-coach');
+      renderCoachesList();
+    }
+    async function deleteCoach(id) {
+      if (!confirm('آیا از حذف این مربی و تمام اطلاعاتش مطمئن هستید؟')) return;
+      const c = db.coaches.find(x => x.id === id);
+      if (c && c.serverId && getServerUrl()) {
+        const res = await callServer('delete_coach', { password: adminPasswordCache, id: c.serverId });
+        if (!res.ok) { alert('حذف روی سرور ناموفق بود (اتصال اینترنت را چک کنید)'); return; }
+      }
+      db.coaches = db.coaches.filter(c => c.id !== id);
+      saveDB();
+      renderCoachesList();
+    }
+    async function changeAdminPass() {
+      const p = document.getElementById('new-admin-pass').value.trim();
+      if (!p) { alert('رمز جدید را وارد کنید'); return; }
+      if (getServerUrl()) {
+        const res = await callServer('admin_change_password', { password: adminPasswordCache, new_password: p });
+        if (!res.ok) { alert('تغییر رمز روی سرور ناموفق بود (اتصال اینترنت را چک کنید)'); return; }
+      }
+      adminPasswordCache = p;
+      db.adminPassword = p;
+      saveDB();
+      document.getElementById('new-admin-pass').value = '';
+      alert('رمز مدیر تغییر کرد');
+    }
+
+    // ---------- تب‌های برنامه ----------
+    document.querySelectorAll('#screen-app .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#screen-app .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('#screen-app .panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'students') renderStudents();
+        if (tab.dataset.tab === 'alerts') renderAlerts();
+      });
+    });
+
+    // ---------- روزها و سانس‌ها ----------
+    function renderDays() {
+      const data = getActiveData();
+      const grid = document.getElementById('days-grid');
+      grid.innerHTML = '';
+      DAYS.forEach(day => {
+        const count = (data.sessions[day] || []).length;
+        const btn = document.createElement('button');
+        btn.className = 'day-btn' + (selectedDay === day ? ' active' : '');
+        btn.innerHTML = day + '<br><small style="font-weight:400;opacity:0.8">' + count + ' سانس</small>';
+        btn.onclick = () => selectDay(day);
+        grid.appendChild(btn);
+      });
+    }
+    function selectDay(day) {
+      selectedDay = day;
+      renderDays();
+      document.getElementById('sessions-card').style.display = 'block';
+      document.getElementById('selected-day-title').textContent = day;
+      renderSessions();
+    }
+    function renderSessions() {
+      const data = getActiveData();
+      const list = document.getElementById('session-list');
+      const sessions = data.sessions[selectedDay] || [];
+      if (sessions.length === 0) {
+        list.innerHTML = '<div class="empty-state">سانسی تعریف نشده.</div>';
+        return;
+      }
+      list.innerHTML = sessions.map(s => {
+        const studentNames = (s.students||[]).map(sid => {
+          const st = data.students.find(x => x.id === sid);
+          return st ? {id:sid, name:st.name} : null;
+        }).filter(Boolean);
+        const tempNames = (s.temporary||[]).map(sid => {
+          const st = data.students.find(x => x.id === sid);
+          return st ? {id:sid, name:st.name} : null;
+        }).filter(Boolean);
+        const total = studentNames.length + tempNames.length;
+        const rem = s.capacity - total;
+        return '<div class="session-item"><div class="session-header"><div class="session-time">' + s.start + ' تا ' + s.end + '</div>' +
+          '<div style="display:flex;gap:0.3rem;"><button class="btn btn-outline btn-sm" onclick="editSession(\'' + s.id + '\')">ویرایش</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + s.id + '\')">حذف</button></div></div>' +
+          '<div class="session-meta"><span class="badge">' + total + '/' + s.capacity + '</span>' +
+          '<span class="badge green">' + Number(s.fee).toLocaleString('fa-IR') + ' ت</span>' +
+          '<span class="badge orange">' + s.profit + '٪</span>' +
+          '<span class="badge ' + (rem<=0?'red':'') + '">باقی: ' + rem + '</span></div>' +
+          '<div class="session-students"><h4>ثابت:</h4><div>' +
+          (studentNames.length ? studentNames.map(n => '<span class="chip">' + n.name +
+            '<button onclick="removeFromSession(\'' + s.id + '\',\'' + n.id + '\')">×</button></span>').join('') : '<span style="color:var(--muted);font-size:0.8rem;">—</span>') +
+          '</div></div><div class="session-students"><h4>موقت:</h4><div>' +
+          (tempNames.length ? tempNames.map(n => '<span class="chip temp">' + n.name +
+            '<button onclick="removeTempFromSession(\'' + s.id + '\',\'' + n.id + '\')">×</button></span>').join('') : '<span style="color:var(--muted);font-size:0.8rem;">—</span>') +
+          '</div></div><div class="actions-row">' +
+          '<button class="btn btn-success btn-sm" onclick="openAddToSession(\'' + s.id + '\')" ' + (rem<=0?'disabled':'') + '>＋ ثابت</button>' +
+          '<button class="btn btn-outline btn-sm" onclick="openAddTemp(\'' + s.id + '\')" ' + (rem<=0?'disabled':'') + '>＋ موقت</button>' +
+          '<button class="btn btn-warning btn-sm" onclick="openAttendance(\'' + s.id + '\')">✅ حضور و غیاب</button></div></div>';
+      }).join('');
+    }
+    function openAddSessionModal() {
+      editingSessionId = null;
+      document.getElementById('session-modal-title').textContent = 'افزودن سانس';
+      document.getElementById('session-start').value = '15:00';
+      document.getElementById('session-end').value = '16:00';
+      document.getElementById('session-capacity').value = 6;
+      document.getElementById('session-fee').value = 500000;
+      document.getElementById('session-profit').value = 50;
+      openModal('modal-session');
+    }
+    function editSession(id) {
+      const data = getActiveData();
+      const s = (data.sessions[selectedDay]||[]).find(x => x.id === id);
+      if (!s) return;
+      editingSessionId = id;
+      document.getElementById('session-modal-title').textContent = 'ویرایش سانس';
+      document.getElementById('session-start').value = s.start;
+      document.getElementById('session-end').value = s.end;
+      document.getElementById('session-capacity').value = s.capacity;
+      document.getElementById('session-fee').value = s.fee;
+      document.getElementById('session-profit').value = s.profit;
+      openModal('modal-session');
+    }
+    function saveSession() {
+      const data = getActiveData();
+      const start = document.getElementById('session-start').value;
+      const end = document.getElementById('session-end').value;
+      const capacity = parseInt(document.getElementById('session-capacity').value)||1;
+      const fee = parseInt(document.getElementById('session-fee').value)||0;
+      const profit = parseInt(document.getElementById('session-profit').value)||0;
+      if (!start||!end) { alert('ساعت را وارد کنید'); return; }
+      if (editingSessionId) {
+        const s = data.sessions[selectedDay].find(x => x.id === editingSessionId);
+        if (s) { s.start=start; s.end=end; s.capacity=capacity; s.fee=fee; s.profit=profit; }
+      } else {
+        if (!data.sessions[selectedDay]) data.sessions[selectedDay] = [];
+        data.sessions[selectedDay].push({ id:'s_'+Date.now(), start, end, capacity, fee, profit, students:[], temporary:[] });
+      }
+      saveActiveData();
+      closeModal('modal-session');
+      renderSessions();
+      renderDays();
+    }
+    function deleteSession(id) {
+      if (!confirm('حذف سانس؟')) return;
+      const data = getActiveData();
+      data.sessions[selectedDay] = data.sessions[selectedDay].filter(x => x.id !== id);
+      saveActiveData();
+      renderSessions();
+      renderDays();
+    }
+
+    // ---------- شاگردها ----------
+    function renderStudents() {
+      const data = getActiveData();
+      const list = document.getElementById('students-list');
+      const stats = document.getElementById('students-stats');
+      const total = data.students.length;
+      const finished = data.students.filter(s => s.attended >= s.totalSessions).length;
+      const expired = data.students.filter(s => daysBetweenJalali(s.regDate) >= 40).length;
+      stats.innerHTML =
+        '<div class="stat"><div class="num">' + total + '</div><div class="label">کل</div></div>' +
+        '<div class="stat"><div class="num">' + finished + '</div><div class="label">تمام‌شده</div></div>' +
+        '<div class="stat"><div class="num">' + expired + '</div><div class="label">۴۰ روز+</div></div>';
+
+      if (data.students.length === 0) {
+        list.innerHTML = '<div class="empty-state">شاگردی ثبت نشده.</div>';
+        return;
+      }
+      list.innerHTML = data.students.map(st => {
+        const remaining = Math.max(0, st.totalSessions - st.attended);
+        const daysPassed = daysBetweenJalali(st.regDate);
+        const isFinished = st.attended >= st.totalSessions;
+        const isExpired = daysPassed >= 40;
+        let badge = isFinished ? '<span class="badge red">تمام شده</span>' :
+          isExpired ? '<span class="badge orange">۴۰ روز+</span>' :
+          '<span class="badge green">' + remaining + ' باقی</span>';
+        const phoneHtml = st.phone ?
+          '<span class="phone-actions">📞 ' + st.phone +
+          ' <button class="btn btn-outline btn-xs" onclick="event.stopPropagation();copyPhone(\'' + st.phone + '\')">📋</button>' +
+          ' <a class="btn btn-outline btn-xs" href="tel:' + st.phone + '" onclick="event.stopPropagation()">📞</a></span>' : '<span>📞 —</span>';
+        let historyHtml = '';
+        if (st.history && st.history.length) {
+          const sorted = st.history.slice().reverse();
+          historyHtml = '<div style="margin-top:0.7rem;"><strong style="font-size:0.85rem;">تاریخچه:</strong><div class="history-list">' +
+            sorted.map(h => '<div class="history-item"><span>' + h.date + ' — ' + (h.sessionInfo||'') + '</span>' +
+            '<span class="' + (h.status==='present'?'status-present':'status-absent') + '">' +
+            (h.status==='present'?'✅ حضور':'❌ غیبت') + '</span></div>').join('') + '</div></div>';
+        } else historyHtml = '<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--muted);">تاریخچه‌ای نیست</div>';
+
+        return '<div class="student-item" onclick="toggleStudentNotes(this)">' +
+          '<div class="student-header"><div class="student-name">' + st.name + '</div>' +
+          '<div style="display:flex;gap:0.3rem;flex-wrap:wrap;">' + badge +
+          '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editStudent(\'' + st.id + '\')">ویرایش</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteStudent(\'' + st.id + '\')">حذف</button></div></div>' +
+          '<div class="student-info">' + phoneHtml +
+          '<span>📅 ' + st.regDate + '</span>' +
+          '<span>🎯 کل:' + st.totalSessions + ' رفته:' + st.attended + ' باقی:' + remaining + '</span>' +
+          (daysPassed>0 ? '<span>⏱ ' + daysPassed + ' روز</span>' : '') + '</div>' +
+          ((isFinished||isExpired) ? '<div class="actions-row" onclick="event.stopPropagation()"><button class="btn btn-warning btn-sm" onclick="openReregister(\'' + st.id + '\')">🔄 ثبت‌نام مجدد</button></div>' : '') +
+          '<div class="student-notes"><strong>توضیحات:</strong><br>' +
+          (st.notes ? st.notes.replace(/\n/g,'<br>') : '<span style="color:var(--muted)">—</span>') + historyHtml + '</div></div>';
+      }).join('');
+    }
+    function toggleStudentNotes(el) { el.classList.toggle('expanded'); }
+    function copyPhone(phone) {
+      if (navigator.clipboard) navigator.clipboard.writeText(phone).then(() => alert('کپی شد: '+phone)).catch(() => fallbackCopy(phone));
+      else fallbackCopy(phone);
+    }
+    function fallbackCopy(phone) {
+      const ta = document.createElement('textarea'); ta.value = phone; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('کپی شد: '+phone);
+    }
+    function openAddStudentModal() {
+      editingStudentId = null;
+      document.getElementById('student-modal-title').textContent = 'افزودن شاگرد';
+      document.getElementById('student-name').value = '';
+      document.getElementById('student-phone').value = '';
+      document.getElementById('student-regdate').value = todayJalali();
+      document.getElementById('student-sessions').value = 10;
+      document.getElementById('student-remaining').value = 10;
+      document.getElementById('student-notes').value = '';
+      openModal('modal-student');
+    }
+    function editStudent(id) {
+      const data = getActiveData();
+      const st = data.students.find(x => x.id === id);
+      if (!st) return;
+      editingStudentId = id;
+      document.getElementById('student-modal-title').textContent = 'ویرایش شاگرد';
+      document.getElementById('student-name').value = st.name;
+      document.getElementById('student-phone').value = st.phone || '';
+      document.getElementById('student-regdate').value = st.regDate;
+      document.getElementById('student-sessions').value = st.totalSessions;
+      document.getElementById('student-remaining').value = Math.max(0, st.totalSessions - st.attended);
+      document.getElementById('student-notes').value = st.notes || '';
+      openModal('modal-student');
+    }
+    function saveStudent() {
+      const data = getActiveData();
+      const name = document.getElementById('student-name').value.trim();
+      const phone = document.getElementById('student-phone').value.trim();
+      const regDate = document.getElementById('student-regdate').value.trim();
+      let total = parseInt(document.getElementById('student-sessions').value)||10;
+      let remaining = parseInt(document.getElementById('student-remaining').value);
+      const notes = document.getElementById('student-notes').value.trim();
+      if (!name) { alert('نام را وارد کنید'); return; }
+      if (!isValidJalali(regDate)) { alert('تاریخ شمسی صحیح وارد کنید'); return; }
+      if (total<1) total=1; if (total>15) total=15;
+      if (isNaN(remaining)||remaining<0) remaining=total;
+      if (remaining>total) remaining=total;
+      const attended = total - remaining;
+      if (editingStudentId) {
+        const st = data.students.find(x => x.id === editingStudentId);
+        if (st) { st.name=name; st.phone=phone; st.regDate=regDate; st.totalSessions=total; st.attended=attended; st.notes=notes; if(!st.history) st.history=[]; }
+      } else {
+        data.students.push({ id:'st_'+Date.now(), name, phone, regDate, totalSessions:total, attended, notes, history:[], createdAt:new Date().toISOString() });
+      }
+      saveActiveData();
+      closeModal('modal-student');
+      renderStudents();
+      updateAlertCount();
+    }
+    function deleteStudent(id) {
+      if (!confirm('حذف شاگرد؟')) return;
+      const data = getActiveData();
+      data.students = data.students.filter(x => x.id !== id);
+      DAYS.forEach(day => {
+        (data.sessions[day]||[]).forEach(s => {
+          s.students = (s.students||[]).filter(sid => sid !== id);
+          s.temporary = (s.temporary||[]).filter(sid => sid !== id);
+        });
+      });
+      saveActiveData();
+      renderStudents();
+      if (selectedDay) renderSessions();
+      updateAlertCount();
+    }
+
+    // ---------- افزودن به سانس ----------
+    function openAddToSession(sid) {
+      currentSessionForAdd = sid;
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === sid);
+      if (!session) return;
+      const total = (session.students||[]).length + (session.temporary||[]).length;
+      document.getElementById('add-to-session-info').textContent = session.start + '-' + session.end + ' | باقی: ' + (session.capacity-total);
+      const select = document.getElementById('select-student-for-session');
+      select.innerHTML = '';
+      const avail = data.students.filter(st => st.attended < st.totalSessions && !(session.students||[]).includes(st.id) && !(session.temporary||[]).includes(st.id));
+      if (!avail.length) select.innerHTML = '<option value="">شاگردی نیست</option>';
+      else avail.forEach(st => { const o=document.createElement('option'); o.value=st.id; o.textContent=st.name+' (مانده:'+(st.totalSessions-st.attended)+')'; select.appendChild(o); });
+      openModal('modal-add-to-session');
+    }
+    function confirmAddToSession() {
+      const studentId = document.getElementById('select-student-for-session').value;
+      if (!studentId) { alert('انتخاب کنید'); return; }
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === currentSessionForAdd);
+      if (!session) return;
+      const total = (session.students||[]).length + (session.temporary||[]).length;
+      if (total >= session.capacity) { alert('ظرفیت پر است'); return; }
+      if (!session.students) session.students = [];
+      session.students.push(studentId);
+      saveActiveData();
+      closeModal('modal-add-to-session');
+      renderSessions();
+    }
+    function removeFromSession(sid, stid) {
+      if (!confirm('حذف از سانس؟')) return;
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === sid);
+      if (!session) return;
+      session.students = (session.students||[]).filter(id => id !== stid);
+      saveActiveData();
+      renderSessions();
+    }
+    function openAddTemp(sid) {
+      currentSessionForTemp = sid;
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === sid);
+      if (!session) return;
+      const total = (session.students||[]).length + (session.temporary||[]).length;
+      document.getElementById('add-temp-info').textContent = session.start + '-' + session.end + ' | باقی: ' + (session.capacity-total);
+      const select = document.getElementById('select-temp-student');
+      select.innerHTML = '';
+      const avail = data.students.filter(st => st.attended < st.totalSessions && !(session.students||[]).includes(st.id) && !(session.temporary||[]).includes(st.id));
+      if (!avail.length) select.innerHTML = '<option value="">شاگردی نیست</option>';
+      else avail.forEach(st => { const o=document.createElement('option'); o.value=st.id; o.textContent=st.name+' (مانده:'+(st.totalSessions-st.attended)+')'; select.appendChild(o); });
+      openModal('modal-add-temp');
+    }
+    function confirmAddTemp() {
+      const studentId = document.getElementById('select-temp-student').value;
+      if (!studentId) { alert('انتخاب کنید'); return; }
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === currentSessionForTemp);
+      if (!session) return;
+      const total = (session.students||[]).length + (session.temporary||[]).length;
+      if (total >= session.capacity) { alert('ظرفیت پر است'); return; }
+      if (!session.temporary) session.temporary = [];
+      session.temporary.push(studentId);
+      saveActiveData();
+      closeModal('modal-add-temp');
+      renderSessions();
+    }
+    function removeTempFromSession(sid, stid) {
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === sid);
+      if (!session) return;
+      session.temporary = (session.temporary||[]).filter(id => id !== stid);
+      saveActiveData();
+      renderSessions();
+    }
+
+    // ---------- حضور و غیاب ----------
+    function openAttendance(sid) {
+      currentSessionForAttendance = sid;
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === sid);
+      if (!session) return;
+      const allIds = (session.students||[]).concat(session.temporary||[]);
+      if (!allIds.length) { alert('شاگردی در سانس نیست'); return; }
+      document.getElementById('attendance-info').textContent = session.start + '-' + session.end + ' | ' + selectedDay;
+      attendanceState = {};
+      const list = document.getElementById('attendance-list');
+      list.innerHTML = allIds.map(sid2 => {
+        const st = data.students.find(x => x.id === sid2);
+        if (!st) return '';
+        const isTemp = (session.temporary||[]).includes(sid2);
+        attendanceState[sid2] = 'present';
+        return '<div class="attendance-row" data-id="' + sid2 + '"><div><strong>' + st.name + '</strong>' +
+          (isTemp ? ' <span class="badge purple">موقت</span>' : '') +
+          '<br><small style="color:var(--muted)">مانده: ' + (st.totalSessions-st.attended) + '</small></div>' +
+          '<div class="att-btns"><button class="btn btn-outline btn-sm active-present" onclick="setAttendance(\'' + sid2 + '\',\'present\',this)">حضور</button>' +
+          '<button class="btn btn-outline btn-sm" onclick="setAttendance(\'' + sid2 + '\',\'absent\',this)">غیبت</button></div></div>';
+      }).join('');
+      openModal('modal-attendance');
+    }
+    function setAttendance(id, status, btn) {
+      attendanceState[id] = status;
+      const row = btn.closest('.attendance-row');
+      row.querySelectorAll('.att-btns button').forEach(b => b.classList.remove('active-present','active-absent'));
+      btn.classList.add(status==='present' ? 'active-present' : 'active-absent');
+    }
+    function confirmAttendance() {
+      const data = getActiveData();
+      const session = (data.sessions[selectedDay]||[]).find(x => x.id === currentSessionForAttendance);
+      if (!session) return;
+      const today = todayJalali();
+      const info = selectedDay + ' ' + session.start + '-' + session.end;
+      let presentCount = 0;
+      Object.keys(attendanceState).forEach(sid => {
+        const st = data.students.find(x => x.id === sid);
+        if (!st) return;
+        if (!st.history) st.history = [];
+        st.history.push({ date: today, status: attendanceState[sid], sessionInfo: info });
+        if (attendanceState[sid]==='present' && st.attended < st.totalSessions) { st.attended++; presentCount++; }
+      });
+      session.temporary = [];
+      saveActiveData();
+      closeModal('modal-attendance');
+      renderSessions();
+      updateAlertCount();
+      alert('ثبت شد. ' + presentCount + ' نفر حاضر بودند.');
+    }
+
+    // ---------- ثبت‌نام مجدد ----------
+    function openReregister(id) {
+      reregisterStudentId = id;
+      const data = getActiveData();
+      const st = data.students.find(x => x.id === id);
+      if (!st) return;
+      document.getElementById('reregister-info').innerHTML = 'شاگرد: <strong>' + st.name + '</strong><br>' + st.attended + '/' + st.totalSessions;
+      document.getElementById('reregister-sessions').value = 10;
+      document.getElementById('reregister-date').value = todayJalali();
+      openModal('modal-reregister');
+    }
+    function confirmReregister() {
+      const data = getActiveData();
+      const st = data.students.find(x => x.id === reregisterStudentId);
+      if (!st) return;
+      let n = parseInt(document.getElementById('reregister-sessions').value)||10;
+      if (n<1) n=1; if (n>15) n=15;
+      const d = document.getElementById('reregister-date').value.trim();
+      if (!isValidJalali(d)) { alert('تاریخ صحیح وارد کنید'); return; }
+      st.totalSessions = n; st.attended = 0; st.regDate = d;
+      saveActiveData();
+      closeModal('modal-reregister');
+      renderStudents();
+      renderAlerts();
+      updateAlertCount();
+      alert('ثبت‌نام مجدد انجام شد');
+    }
+
+    // ---------- هشدارها ----------
+    function getAlerts() {
+      const data = getActiveData();
+      const alerts = [];
+      data.students.forEach(st => {
+        const days = daysBetweenJalali(st.regDate);
+        if (st.attended >= st.totalSessions)
+          alerts.push({ type:'finished', student:st, message:'جلسات «'+st.name+'» تمام شده ('+st.attended+'/'+st.totalSessions+')' });
+        if (days >= 40)
+          alerts.push({ type:'expired', student:st, message:'بیش از ۴۰ روز از ثبت‌نام «'+st.name+'» گذشته ('+days+' روز)' });
+      });
+      return alerts;
+    }
+    function renderAlerts() {
+      const list = document.getElementById('alerts-list');
+      const alerts = getAlerts();
+      if (!alerts.length) { list.innerHTML = '<div class="empty-state">هشداری نیست 👍</div>'; return; }
+      list.innerHTML = alerts.map(a =>
+        '<div class="alert-box ' + (a.type==='finished'?'danger':'') + '"><div class="text">' + a.message + '</div>' +
+        '<button class="btn btn-warning btn-sm" onclick="openReregister(\'' + a.student.id + '\')">ثبت‌نام مجدد</button></div>'
+      ).join('');
+    }
+    function updateAlertCount() {
+      const count = getAlerts().length;
+      const badge = document.getElementById('alert-count');
+      if (count > 0) { badge.style.display='inline'; badge.textContent=count; }
+      else badge.style.display='none';
+    }
+
+    // ---------- مودال ----------
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+      o.addEventListener('click', e => { if (e.target===o) o.classList.remove('show'); });
+    });
+
+    // ---------- شروع ----------
+    loadDB();
+    document.getElementById('server-url').value = getServerUrl();
+    showScreen('login');
+  </script>
+</body>
+</html>
