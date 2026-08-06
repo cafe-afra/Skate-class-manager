@@ -1,5 +1,0 @@
-<resources>
-    <style name="Theme.SkateClassManager" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor">#0369a1</item>
-    </style>
-</resources>
