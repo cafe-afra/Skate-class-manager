@@ -428,7 +428,7 @@
     let adminPasswordCache = null; // رمز مدیر که در سشن فعلی برای صدا زدن API نگه می‌داریم
 
     // ---------- ارتباط با سرور ----------
-    function getServerUrl() { return localStorage.getItem('skateServerUrl') || ''; }
+    function getServerUrl() { return localStorage.getItem('skateServerUrl') || 'https://skateapp.ir/backend/api.php'; }
     function saveServerUrl() {
       const url = document.getElementById('server-url').value.trim();
       localStorage.setItem('skateServerUrl', url);
